@@ -78,7 +78,15 @@ export const translations = {
     pulseMuted: 'Click muted',
     openLandscape: '📱 Mobile Landscape Mode (Rhythmic Auto-Scroll)',
     landscapeModeTitle: 'Landscape Flow Mode',
-    exitLandscape: 'Exit Landscape'
+    exitLandscape: 'Exit Landscape',
+    uploadMidi: 'Upload an existing MIDI',
+    uploadMidiHint: 'For the closest possible result, use a MIDI you own or have permission to use.',
+    readingMidi: 'Reading MIDI...',
+    midiLoaded: 'MIDI loaded',
+    midiInvalid: 'Invalid or unsupported MIDI file',
+    uploadedMidiComposer: 'Imported MIDI',
+    transcriptionSource: 'Source',
+    generatedApproximate: 'Approximate musical generation'
   },
   es: {
     appTitle: 'App Piano',
@@ -143,7 +151,15 @@ export const translations = {
     pulseMuted: 'Click apagado',
     openLandscape: '📱 Modo Horizontal Móvil (Auto-Scroll al Ritmo)',
     landscapeModeTitle: 'Flujo Horizontal al Ritmo',
-    exitLandscape: 'Salir de Horizontal'
+    exitLandscape: 'Salir de Horizontal',
+    uploadMidi: 'Subir un MIDI existente',
+    uploadMidiHint: 'Para máxima fidelidad, usa un MIDI propio o con permiso de uso.',
+    readingMidi: 'Leyendo MIDI...',
+    midiLoaded: 'MIDI cargado',
+    midiInvalid: 'Archivo MIDI inválido o no compatible',
+    uploadedMidiComposer: 'MIDI importado',
+    transcriptionSource: 'Origen',
+    generatedApproximate: 'Generación musical aproximada'
   },
   de: {
     appTitle: 'App Piano',

@@ -145,6 +145,9 @@ export class SongPlayerComponent {
           <div style="font-size: 0.85rem; color: var(--gold-accent); font-weight: 600;">
             ✓ ${rangeStatus}
           </div>
+          <div style="margin-top: 0.35rem; font-size: 0.78rem; opacity: 0.82;">
+            ${t('transcriptionSource')}: ${song.sourceLabel || t('generatedApproximate')}
+          </div>
         </div>
       </section>
     `;
