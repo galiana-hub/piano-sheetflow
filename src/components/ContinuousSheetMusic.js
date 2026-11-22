@@ -156,7 +156,7 @@ export class ContinuousSheetMusicComponent {
 
               return `
                 <div 
-                  class="flow-note-node ${item.isBlack ? 'accidental' : ''} ${item.wasShifted ? 'transposed' : ''}"
+                  class="flow-note-node ${item.isBlack ? 'accidental' : ''} ${item.wasShifted ? 'transposed' : ''} ${item.wasFolded ? 'folded' : ''}"
                   data-note="${item.note}"
                   data-index="${idx}"
                   style="
@@ -164,7 +164,7 @@ export class ContinuousSheetMusicComponent {
                     top: ${item.topPercent}%; 
                     width: ${noteWidth}px;
                   "
-                  title="${formattedNote} (${item.duration}s) · Clic para escuchar"
+                  title="${formattedNote} (${item.duration}s)${item.wasFolded ? ' · ' + t('foldedNotesStatus').replace('{count}', '1') : ''} · Clic para escuchar"
                 >
                   <span class="node-bullet">${idx + 1}</span>
                   <span class="node-title">${formattedNote}</span>
@@ -191,7 +191,9 @@ export class ContinuousSheetMusicComponent {
             <span>${flowData.items.length} ${t('notesCount')} · ${t('continuousMelodyClean')}</span>
           </div>
           <div style="font-size: 0.8rem; color: var(--gold-accent);">
-            ${flowData.octaveShift !== 0 ? `(${flowData.octaveShift > 0 ? '+' : ''}${flowData.octaveShift} Oct)` : '✓ Rango nativo'}
+            ${flowData.isCompressed
+              ? t('foldedNotesStatus').replace('{count}', flowData.foldedNotesCount)
+              : (flowData.octaveShift !== 0 ? `(${flowData.octaveShift > 0 ? '+' : ''}${flowData.octaveShift} Oct)` : '✓ Rango nativo')}
           </div>
         </div>
       </section>

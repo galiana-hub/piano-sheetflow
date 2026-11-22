@@ -41,7 +41,7 @@ export class SongPlayerComponent {
     this.selectedKeys = keys;
   }
 
-  // Obtiene la secuencia de notas adaptada con máxima fidelidad en bloque
+  // Obtiene la misma secuencia adaptada que usa la vista continua.
   getAdaptedNotesSequence() {
     const flatNotes = SongSearchComponent.getFlatNotes(this.song);
     const flowData = SheetGeneratorAlgorithm.generateContinuousFlow(flatNotes, this.selectedKeys);
@@ -104,6 +104,13 @@ export class SongPlayerComponent {
   render() {
     const t = this.t;
     const song = this.song;
+    const flowData = SheetGeneratorAlgorithm.generateContinuousFlow(
+      SongSearchComponent.getFlatNotes(song),
+      this.selectedKeys
+    );
+    const rangeStatus = flowData.isCompressed
+      ? t('foldedNotesStatus').replace('{count}', flowData.foldedNotesCount)
+      : t('octavesTransposed').replace('{keys}', this.selectedKeys);
 
     return `
       <section class="card-section" aria-labelledby="active-song-heading">
@@ -136,7 +143,7 @@ export class SongPlayerComponent {
           ${this.pulseMeter.render()}
 
           <div style="font-size: 0.85rem; color: var(--gold-accent); font-weight: 600;">
-            ✓ ${t('octavesTransposed').replace('{keys}', this.selectedKeys)}
+            ✓ ${rangeStatus}
           </div>
         </div>
       </section>

@@ -1,5 +1,5 @@
-// Algoritmo de Adaptación Musical de Alta Fidelidad
-// Preserva al 100% los intervalos melódicos, la coherencia de frase y la tesitura sin deformar notas
+// Algoritmo de adaptación musical por bloque para la tesitura del teclado seleccionado.
+// Conserva los intervalos cuando el rango completo cabe; cuando no cabe, informa el plegado de notas.
 import { PIANO_SIZES } from '../components/PianoSelector.js';
 
 const CHROMATIC_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -26,10 +26,8 @@ export class SheetGeneratorAlgorithm {
     return `${pitch}${octave}`;
   }
 
-  // ALGORITMO DE TRANSPOSICIÓN FIEL EN BLOQUE:
-  // Preserva con precisión matemática los intervalos entre todas las notas.
-  // Nunca transpone notas aisladas, lo que garantiza que la canción suene
-  // exactamente como la original sin saltos bruscos ni notas desafinadas.
+  // Calcula una adaptación de bloque.
+  // Conserva los intervalos si todo el rango cabe; si no, marca el plegado por separado.
   static calculateFidelityTransposition(notes, targetKeysCount) {
     const config = PIANO_SIZES.find(s => s.keys === targetKeysCount) || PIANO_SIZES[3];
     const targetMinMidi = this.noteToMidi(config.startNote);
@@ -45,17 +43,35 @@ export class SheetGeneratorAlgorithm {
     const songCenter = (songMinMidi + songMaxMidi) / 2;
     const targetCenter = (targetMinMidi + targetMaxMidi) / 2;
 
-    // Calcular desplazamiento de octavas que acerque el centro de la canción al centro del piano
+    // Buscar el desplazamiento por semitonos más cercano al centro que conserve
+    // también todos los intervalos posibles dentro del rango disponible.
     let bestShift = Math.round((targetCenter - songCenter) / 12) * 12;
+    const shiftCandidates = new Set();
 
-    // Comprobar si con ese desplazamiento encaja perfectamente dentro de los límites
-    if (songMinMidi + bestShift < targetMinMidi) {
-      const neededUp = Math.ceil((targetMinMidi - (songMinMidi + bestShift)) / 12) * 12;
-      bestShift += neededUp;
+    for (let shift = -84; shift <= 84; shift += 12) {
+      shiftCandidates.add(shift);
     }
-    if (songMaxMidi + bestShift > targetMaxMidi) {
-      const neededDown = Math.ceil(((songMaxMidi + bestShift) - targetMaxMidi) / 12) * 12;
-      bestShift -= neededDown;
+
+    if (songSpan <= availableSpan) {
+      let bestCost = null;
+      for (const shift of shiftCandidates) {
+        const shiftedMin = songMinMidi + shift;
+        const shiftedMax = songMaxMidi + shift;
+        if (shiftedMin < targetMinMidi || shiftedMax > targetMaxMidi) continue;
+
+        const centerCost = Math.abs((shiftedMin + shiftedMax) / 2 - targetCenter);
+        const cost = [Math.abs(shift), centerCost];
+        if (!bestCost ||
+            cost[0] < bestCost[0] ||
+            (cost[0] === bestCost[0] && cost[1] < bestCost[1])) {
+          bestCost = cost;
+          bestShift = shift;
+        }
+      }
+    } else {
+      // El rango original no cabe completo en un teclado compacto. Se mantiene
+      // el desplazamiento por octavas más próximo y se comprime solo después.
+      bestShift = Math.round((targetCenter - songCenter) / 12) * 12;
     }
 
     // Si la melodía cabe completa en el teclado, el desplazamiento por octava es perfecto
@@ -68,10 +84,33 @@ export class SheetGeneratorAlgorithm {
     return { octaveShift: bestShift, isCompressed: true, targetMinMidi, targetMaxMidi };
   }
 
-  // GENERADOR DE FLUJO CONTINUO CON MÁXIMA FIDELIDAD
+  // Lleva un MIDI fuera del rango al mismo valor tonal más cercano dentro del teclado.
+  // Esto garantiza que ningún resultado quede fuera de las notas físicas seleccionadas.
+  static foldMidiToRange(midi, targetMinMidi, targetMaxMidi) {
+    if (midi >= targetMinMidi && midi <= targetMaxMidi) return midi;
+
+    let bestMidi = midi;
+    let bestDistance = Infinity;
+    for (let candidate = targetMinMidi; candidate <= targetMaxMidi; candidate++) {
+      if (candidate % 12 !== midi % 12) continue;
+      const distance = Math.abs(candidate - midi);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestMidi = candidate;
+      }
+    }
+
+    // Un rango que no contiene la clase tonal es improbable, pero se evita
+    // devolver una nota fuera de límites con un clamp matemático.
+    return bestMidi === midi
+      ? Math.max(targetMinMidi, Math.min(targetMaxMidi, midi))
+      : bestMidi;
+  }
+
+  // GENERADOR DE FLUJO CONTINUO ADAPTADO AL TECLADO
   static generateContinuousFlow(rawNotes, targetKeysCount) {
     if (!rawNotes || !rawNotes.length) {
-      return { items: [], totalDuration: 0, minMidi: 60, maxMidi: 72, octaveShift: 0 };
+      return { items: [], totalDuration: 0, minMidi: 60, maxMidi: 72, octaveShift: 0, isCompressed: false, foldedNotesCount: 0 };
     }
 
     const { octaveShift, isCompressed, targetMinMidi, targetMaxMidi } = 
@@ -80,15 +119,19 @@ export class SheetGeneratorAlgorithm {
     let currentTime = 0;
     const processedNotes = [];
 
+    let foldedNotesCount = 0;
+
     rawNotes.forEach((item, index) => {
       const originalMidi = this.noteToMidi(item.note);
       let adaptedMidi = originalMidi + octaveShift;
+      const preFoldMidi = adaptedMidi;
 
       // En teclados muy pequeños, si una nota extrema sobrepasa el límite físico,
       // se ajusta suavemente conservando la tónica sin romper la frase
       if (isCompressed) {
-        if (adaptedMidi > targetMaxMidi) adaptedMidi = targetMaxMidi - ((adaptedMidi - targetMaxMidi) % 12);
-        if (adaptedMidi < targetMinMidi) adaptedMidi = targetMinMidi + ((targetMinMidi - adaptedMidi) % 12);
+        const foldedMidi = this.foldMidiToRange(adaptedMidi, targetMinMidi, targetMaxMidi);
+        if (foldedMidi !== adaptedMidi) foldedNotesCount++;
+        adaptedMidi = foldedMidi;
       }
 
       const adaptedNoteName = this.midiToNote(adaptedMidi);
@@ -103,7 +146,8 @@ export class SheetGeneratorAlgorithm {
         duration: duration,
         section: item.section || '',
         isBlack: adaptedNoteName.includes('#'),
-        wasShifted: octaveShift !== 0 || adaptedMidi !== originalMidi
+        wasShifted: octaveShift !== 0 || adaptedMidi !== originalMidi,
+        wasFolded: isCompressed && adaptedMidi !== preFoldMidi
       });
 
       currentTime += duration;
@@ -130,7 +174,9 @@ export class SheetGeneratorAlgorithm {
       totalDuration: currentTime,
       minMidi,
       maxMidi,
-      octaveShift: octaveShift / 12
+      octaveShift: octaveShift / 12,
+      isCompressed,
+      foldedNotesCount
     };
   }
 }
