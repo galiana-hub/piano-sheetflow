@@ -1,8 +1,8 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  // Rutas relativas para compatibilidad total con GitHub Pages
-  base: './',
+  // GitHub Pages serves this repository from /piano-sheetflow/.
+  base: '/piano-sheetflow/',
   server: {
     port: 3000,
     open: false,
