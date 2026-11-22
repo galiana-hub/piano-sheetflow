@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2a170f"/>
+      <stop offset="50%" stop-color="#190e09"/>
+      <stop offset="100%" stop-color="#0e0704"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e2c079"/>
+      <stop offset="100%" stop-color="#9a7b37"/>
+    </linearGradient>
+    <linearGradient id="whiteKey" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="85%" stop-color="#f5f5f5"/>
+      <stop offset="100%" stop-color="#dcdcdc"/>
+    </linearGradient>
+    <linearGradient id="blackKey" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#333333"/>
+      <stop offset="20%" stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#080808"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Fondo redondo madera oscura -->
+  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
+  <rect x="12" y="12" width="488" height="488" rx="98" fill="none" stroke="url(#gold)" stroke-width="3" opacity="0.4"/>
+
+  <!-- Tapa del piano / Teclado -->
+  <g filter="url(#shadow)" transform="translate(66, 126)">
+    <!-- Base del teclado -->
+    <rect x="0" y="0" width="380" height="260" rx="16" fill="#130b07" stroke="#3d2214" stroke-width="4"/>
+    
+    <!-- Teclas blancas -->
+    <rect x="10" y="12" width="48" height="236" rx="6" fill="url(#whiteKey)"/>
+    <rect x="62" y="12" width="48" height="236" rx="6" fill="url(#whiteKey)"/>
+    <rect x="114" y="12" width="48" height="236" rx="6" fill="url(#whiteKey)"/>
+    <rect x="166" y="12" width="48" height="236" rx="6" fill="url(#whiteKey)"/>
+    <rect x="218" y="12" width="48" height="236" rx="6" fill="url(#whiteKey)"/>
+    <rect x="270" y="12" width="48" height="236" rx="6" fill="url(#whiteKey)"/>
+    <rect x="322" y="12" width="48" height="236" rx="6" fill="url(#whiteKey)"/>
+
+    <!-- Teclas negras -->
+    <rect x="42" y="12" width="32" height="145" rx="4" fill="url(#blackKey)"/>
+    <rect x="98" y="12" width="32" height="145" rx="4" fill="url(#blackKey)"/>
+    <rect x="202" y="12" width="32" height="145" rx="4" fill="url(#blackKey)"/>
+    <rect x="254" y="12" width="32" height="145" rx="4" fill="url(#blackKey)"/>
+    <rect x="306" y="12" width="32" height="145" rx="4" fill="url(#blackKey)"/>
+
+    <!-- Detalle de luz de notas dorada -->
+    <circle cx="86" cy="205" r="7" fill="#d4af37"/>
+    <circle cx="190" cy="205" r="7" fill="#d4af37"/>
+    <circle cx="294" cy="205" r="7" fill="#d4af37"/>
+  </g>
+</svg>

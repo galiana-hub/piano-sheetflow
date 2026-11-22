@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600">
+  <defs>
+    <!-- Filtro de turbulencia direccional simulando las vetas orgánicas de la madera -->
+    <filter id="wood-grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.006 0.08" numOctaves="4" seed="42" result="noise" />
+      <feColorMatrix type="matrix" values="
+        0.28 0.14 0.08 0 0.08
+        0.16 0.08 0.04 0 0.04
+        0.08 0.04 0.02 0 0.02
+        0    0    0    1 0" in="noise" result="coloredGrain" />
+      <feBlend mode="multiply" in="SourceGraphic" in2="coloredGrain" />
+    </filter>
+
+    <!-- Gradiente de base caoba / nogal oscuro de piano de concierto -->
+    <linearGradient id="base-wood" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#140905"/>
+      <stop offset="25%" stop-color="#221109"/>
+      <stop offset="50%" stop-color="#180b06"/>
+      <stop offset="75%" stop-color="#2a140b"/>
+      <stop offset="100%" stop-color="#140905"/>
+    </linearGradient>
+
+    <!-- Vetas lineales suaves añadidas -->
+    <pattern id="grain-stripes" width="40" height="600" patternUnits="userSpaceOnUse">
+      <line x1="8" y1="0" x2="8" y2="600" stroke="#0e0603" stroke-width="1.5" opacity="0.4"/>
+      <line x1="19" y1="0" x2="19" y2="600" stroke="#2c170d" stroke-width="2" opacity="0.35"/>
+      <line x1="31" y1="0" x2="31" y2="600" stroke="#120703" stroke-width="1" opacity="0.5"/>
+    </pattern>
+  </defs>
+
+  <!-- Capa base con gradiente -->
+  <rect width="100%" height="100%" fill="url(#base-wood)"/>
+  <!-- Capa con el filtro orgánico de turbulencia de vetas -->
+  <rect width="100%" height="100%" fill="#1a0c07" filter="url(#wood-grain)" opacity="0.85"/>
+  <!-- Capa de líneas finas de poros de madera -->
+  <rect width="100%" height="100%" fill="url(#grain-stripes)"/>
+</svg>
