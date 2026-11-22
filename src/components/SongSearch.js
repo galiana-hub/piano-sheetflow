@@ -1,4 +1,5 @@
 import { UniversalSongProvider, BUILT_IN_CATALOG } from '../utils/songProvider.js';
+import { MidiParser } from '../utils/midiParser.js';
 
 export const FEATURED_SONGS = BUILT_IN_CATALOG;
 
@@ -59,6 +60,15 @@ export class SongSearchComponent {
           </button>
         </form>
 
+        <div class="midi-upload-row">
+          <label class="midi-upload-label" for="midi-file-input">
+            <span>📁</span>
+            <span>${t('uploadMidi')}</span>
+          </label>
+          <input type="file" id="midi-file-input" accept=".mid,.midi,audio/midi" hidden>
+          <span class="midi-upload-hint">${t('uploadMidiHint')}</span>
+        </div>
+
         <!-- PANEL DE RESULTADOS MULTIPLES DE LA API (CUANDO HAY BÚSQUEDA) -->
         <div id="api-search-results-container" style="${this.searchResults.length ? 'display: block;' : 'display: none;'}">
           <div class="results-header-bar">
@@ -108,6 +118,8 @@ export class SongSearchComponent {
     const input     = container.querySelector('#search-input');
     const submitBtn = container.querySelector('#search-submit-btn');
     const clearBtn  = container.querySelector('#clear-results-btn');
+    const midiInput = container.querySelector('#midi-file-input');
+    const midiHint  = container.querySelector('.midi-upload-hint');
 
     // Búsqueda en API con múltiples resultados
     if (form) {
@@ -139,6 +151,37 @@ export class SongSearchComponent {
       clearBtn.addEventListener('click', () => {
         this.searchResults = [];
         this.renderResults(container);
+      });
+    }
+
+    if (midiInput) {
+      midiInput.addEventListener('change', async () => {
+        const file = midiInput.files?.[0];
+        if (!file) return;
+        if (midiHint) midiHint.textContent = this.t('readingMidi');
+
+        try {
+          const parsed = MidiParser.parse(await file.arrayBuffer());
+          const title = file.name.replace(/\.(mid|midi)$/i, '') || 'Imported MIDI';
+          const midiSong = {
+            id: 'midi-' + Date.now(),
+            title,
+            composer: this.t('uploadedMidiComposer'),
+            genre: 'MIDI',
+            tempo: parsed.bpm,
+            notes: parsed.notes,
+            sourceType: 'midi',
+            sourceLabel: 'User MIDI file'
+          };
+          this.selectedSong = midiSong;
+          this.onSelectSong(midiSong);
+          if (midiHint) midiHint.textContent = this.t('midiLoaded');
+        } catch (error) {
+          console.error('MIDI import failed:', error);
+          if (midiHint) midiHint.textContent = this.t('midiInvalid');
+        } finally {
+          midiInput.value = '';
+        }
       });
     }
 
@@ -212,8 +255,13 @@ export class SongSearchComponent {
         const songId = btn.dataset.songId;
         const song   = BUILT_IN_CATALOG.find(s => s.id === songId);
         if (song) {
-          this.selectedSong = song;
-          this.onSelectSong(song);
+          const catalogSong = {
+            ...song,
+            sourceType: 'catalog',
+            sourceLabel: 'Catalog melody'
+          };
+          this.selectedSong = catalogSong;
+          this.onSelectSong(catalogSong);
           chipBtns.forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
         }

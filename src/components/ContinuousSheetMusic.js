@@ -196,6 +196,9 @@ export class ContinuousSheetMusicComponent {
               : (flowData.octaveShift !== 0 ? `(${flowData.octaveShift > 0 ? '+' : ''}${flowData.octaveShift} Oct)` : '✓ Rango nativo')}
           </div>
         </div>
+        <div style="margin-top: 0.5rem; font-size: 0.78rem; opacity: 0.82;">
+          ${t('transcriptionSource')}: ${this.song.sourceLabel || t('generatedApproximate')}
+        </div>
       </section>
     `;
   }

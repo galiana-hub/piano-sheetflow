@@ -128,6 +128,7 @@ export class MidiParser {
 
     allTracksNotes.sort((a, b) => b.length - a.length);
     const mainTrack = allTracksNotes[0];
+    mainTrack.sort((a, b) => a.startTicks - b.startTicks);
 
     // 4. Convertir ticks a segundos reales según el tempo y la división de tiempo
     const secondsPerTick = (currentTempoMicros / 1000000) / timeDivision;

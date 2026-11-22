@@ -4,6 +4,7 @@
 // la partitura entera con estructura narrativa completa (Intro, Verso, Estribillo, Outro).
 
 import { MidiParser } from './midiParser.js';
+import { PreviewAudioTranscriber } from './previewTranscriber.js';
 
 // ============================================================================
 // TEORÍA MUSICAL: Constantes y tablas de escalas / géneros
@@ -616,7 +617,9 @@ export class UniversalSongProvider {
       genre:    item.genre || 'Pop',
       artwork:  item.artwork || '',
       tempo:    Math.round(bpm),
-      notes
+      notes,
+      sourceType: 'generated',
+      sourceLabel: 'Approximate musical generation'
     };
   }
 
@@ -666,7 +669,12 @@ export class UniversalSongProvider {
     for (const { id, test } of matchers) {
       if (test()) {
         const song = BUILT_IN_CATALOG.find(s => s.id === id);
-        if (song) return { ...song, artwork: item.artwork || song.artwork || '' };
+        if (song) return {
+          ...song,
+          artwork: item.artwork || song.artwork || '',
+          sourceType: 'catalog',
+          sourceLabel: 'Catalog melody'
+        };
       }
     }
 
@@ -674,7 +682,12 @@ export class UniversalSongProvider {
     const exact = BUILT_IN_CATALOG.find(
       s => s.title.toLowerCase() === tl && s.composer.toLowerCase() === al
     );
-    return exact ? { ...exact, artwork: item.artwork || exact.artwork || '' } : null;
+    return exact ? {
+      ...exact,
+      artwork: item.artwork || exact.artwork || '',
+      sourceType: 'catalog',
+      sourceLabel: 'Catalog melody'
+    } : null;
   }
 
   // ----------------------------------------------------------------
@@ -729,7 +742,22 @@ export class UniversalSongProvider {
     const pre = this.findInCatalog(item);
     if (pre) return pre;
 
-    // 2. Enriquecer con MusicBrainz para obtener tags de género más precisos
+    // 2. Mejorar la fidelidad gratis con la vista previa oficial de iTunes.
+    // Solo usa audio real: no sustituye la melodía por una transcripción inventada.
+    if (item.previewUrl) {
+      const preview = await PreviewAudioTranscriber.transcribe(item.previewUrl);
+      if (preview?.notes?.length) {
+        return {
+          ...item,
+          tempo: preview.bpm,
+          notes: preview.notes,
+          sourceType: preview.sourceType,
+          sourceLabel: preview.sourceLabel
+        };
+      }
+    }
+
+    // 3. Enriquecer con MusicBrainz para obtener tags de género más precisos
     let mbData = null;
     try {
       mbData = await Promise.race([
